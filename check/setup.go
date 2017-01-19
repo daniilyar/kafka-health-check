@@ -9,6 +9,7 @@ import (
 
 	"github.com/optiopay/kafka/proto"
 	"github.com/samuel/go-zookeeper/zk"
+	"strconv"
 )
 
 func (check *HealthCheck) connect(firstConnection bool, stop <-chan struct{}) error {
@@ -67,7 +68,7 @@ func (check *HealthCheck) getBrokerPartitionID(createIfMissing *bool) (int32, er
 	}
 
 	if !check.brokerExists(metadata) {
-		return 0, fmt.Errorf("unable to find broker %d in metadata", brokerID)
+		log.Println("WARN: unable to find broker " + strconv.Itoa(int(brokerID)) + " in metadata")
 	}
 
 	for _, topic := range metadata.Topics {
@@ -93,7 +94,7 @@ func (check *HealthCheck) getBrokerPartitionID(createIfMissing *bool) (int32, er
 		*createIfMissing = false
 		return 0, errors.New("health check topic created, try again")
 	}
-	return 0, fmt.Errorf("unable to find topic and parition for broker %d in metadata", brokerID)
+	return 0, fmt.Errorf("unable to find topic and partition for broker %d in metadata", brokerID)
 }
 
 func (check *HealthCheck) brokerExists(metadata *proto.MetadataResp) bool {
